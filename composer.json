@@ -1,6 +1,6 @@
 {
     "name": "long/container",
-    "description": "DI container",
+    "description": "DI Container",
     "keywords": ["container", "facade"],
     "homepage": "https://github.com/sinpe/php-container",
     "type": "library",
