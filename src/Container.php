@@ -25,7 +25,7 @@ use Sinpe\Container\Facades\Container as ContainerFacade;
 /**
  * DI Container.
  * 
- * @package Sinpe\Framework
+ * @package Sinpe\Container
  * @since   1.0.0
  */
 class Container implements ContainerInterface, ArrayAccess

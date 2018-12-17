@@ -16,7 +16,7 @@ use Psr\Container\ContainerInterface;
 /**
  * Facade base class.
  * 
- * @package Sinpe\Framework
+ * @package Sinpe\Container
  * @since   1.0.0
  */
 abstract class Facade

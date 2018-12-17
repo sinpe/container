@@ -15,7 +15,7 @@ use Psr\Container\ContainerInterface as Base;
 /**
  * DI Container interface
  * 
- * @package Sinpe\Framework
+ * @package Sinpe\Container
  * @since   1.0.0
  */
 interface ContainerInterface extends Base

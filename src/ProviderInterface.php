@@ -15,7 +15,7 @@ use Psr\Container\ContainerInterface;
 /**
  * Service set Provider interface.
  * 
- * @package Sinpe\Framework
+ * @package Sinpe\Container
  * @since   1.0.0
  */
 interface ProviderInterface

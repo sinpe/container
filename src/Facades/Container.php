@@ -16,7 +16,7 @@ use Sinpe\Container\Facade;
 /**
  * Container facade.
  * 
- * @package Sinpe\Framework
+ * @package Sinpe\Container
  * @since   1.0.0
  */
 class Container extends Facade
