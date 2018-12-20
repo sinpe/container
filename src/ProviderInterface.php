@@ -10,7 +10,7 @@
 
 namespace Sinpe\Container;
 
-use Psr\Container\ContainerInterface;
+use Psr\Container\ContainerInterface as PsrContainerInterface;
 
 /**
  * Service set Provider interface.
@@ -23,7 +23,7 @@ interface ProviderInterface
     /**
      * Registers services on the given container.
      *
-     * @param ContainerInterface $container A container instance
+     * @param PsrContainerInterface $container A container instance
      */
-    public function register(ContainerInterface $container);
+    public function register(PsrContainerInterface $container);
 }

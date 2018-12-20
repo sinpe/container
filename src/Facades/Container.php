@@ -10,7 +10,7 @@
 
 namespace Sinpe\Container\Facades;
 
-use Sinpe\Container\ContainerInterface;
+use Psr\Container\ContainerInterface as PsrContainerInterface;
 use Sinpe\Container\Facade;
 
 /**
@@ -28,6 +28,6 @@ class Container extends Facade
      */
     protected static function getFacadeAccessor()
     {
-        return ContainerInterface::class;
+        return PsrContainerInterface::class;
     }
 }

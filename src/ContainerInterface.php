@@ -10,15 +10,13 @@
 
 namespace Sinpe\Container;
 
-use Psr\Container\ContainerInterface as Base;
-
 /**
  * DI Container interface
  * 
  * @package Sinpe\Container
  * @since   1.0.0
  */
-interface ContainerInterface extends Base
+interface ContainerInterface
 {
     /**
      * Resolve the given type from the container.

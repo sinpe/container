@@ -10,8 +10,7 @@
 
 namespace Sinpe\Container;
 
-use RuntimeException;
-use Psr\Container\ContainerInterface;
+use Psr\Container\ContainerInterface as PsrContainerInterface;
 
 /**
  * Facade base class.
@@ -24,7 +23,7 @@ abstract class Facade
     /**
      * The container instance being facaded.
      *
-     * @var \Psr\Container\ContainerInterface
+     * @var PsrContainerInterface
      */
     protected static $container;
 
@@ -43,11 +42,11 @@ abstract class Facade
      *
      * @return string
      *
-     * @throws RuntimeException
+     * @throws \RuntimeException
      */
     protected static function getFacadeAccessor()
     {
-        throw new RuntimeException(i18n('Facade does not implement getFacadeAccessor method.'));
+        throw new \RuntimeException(i18n('Facade does not implement getFacadeAccessor method.'));
     }
 
     /**
@@ -69,9 +68,9 @@ abstract class Facade
     /**
      * Set the application instance.
      *
-     * @param \Psr\Container\ContainerInterface $container
+     * @param PsrContainerInterface $container
      */
-    public static function setContainer(ContainerInterface $container)
+    public static function setContainer(PsrContainerInterface $container)
     {
         static::$container = $container;
     }
@@ -84,14 +83,14 @@ abstract class Facade
      *
      * @return mixed
      *
-     * @throws RuntimeException
+     * @throws \RuntimeException
      */
     public static function __callStatic($method, $args)
     {
         $instance = static::getFacadeRoot();
 
         if (!$instance) {
-            throw new RuntimeException(i18n('A facade root "%s" not exists.',static::getFacadeAccessor()));
+            throw new \RuntimeException(i18n('A facade root "%s" not exists.',static::getFacadeAccessor()));
         }
 
         return $instance->$method(...$args);

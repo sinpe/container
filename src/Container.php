@@ -10,16 +10,7 @@
 
 namespace Sinpe\Container;
 
-use ArrayAccess;
-use Closure;
-use Exception;
-use InvalidArgumentException;
-use ReflectionClass;
-use ReflectionFunction;
-use ReflectionFunctionAbstract;
-use ReflectionMethod;
-use ReflectionParameter;
-use RuntimeException;
+use Psr\Container\ContainerInterface as PsrContainerInterface;
 use Sinpe\Container\Facades\Container as ContainerFacade;
 
 /**
@@ -28,7 +19,7 @@ use Sinpe\Container\Facades\Container as ContainerFacade;
  * @package Sinpe\Container
  * @since   1.0.0
  */
-class Container implements ContainerInterface, ArrayAccess
+class Container implements ContainerInterface, PsrContainerInterface, \ArrayAccess
 {
     /**
      * @var static
@@ -119,8 +110,8 @@ class Container implements ContainerInterface, ArrayAccess
     {
         class_alias(ContainerFacade::class, 'Container');
 
-        if (!$this->has(ContainerInterface::class)) {
-            $this->set(ContainerInterface::class, $this);
+        if (!$this->has(PsrContainerInterface::class)) {
+            $this->set(PsrContainerInterface::class, $this);
         }
 
         $this->registerDefaults();
@@ -133,12 +124,12 @@ class Container implements ContainerInterface, ArrayAccess
      *
      * @param string $id    The unique identifier for the item
      * @param mixed  $value The value to define an item
-     * @throws RuntimeException Prevent override of a frozen item
+     * @throws \RuntimeException Prevent override of a frozen item
      */
     public function offsetSet($id, $value)
     {
         if (isset($this->frozen[$id])) {
-            throw new RuntimeException(i18n('Cannot override frozen item "%s".', $id));
+            throw new \RuntimeException(i18n('Cannot override frozen item "%s".', $id));
         }
 
         $this->items[$id] = $value;
@@ -149,7 +140,7 @@ class Container implements ContainerInterface, ArrayAccess
      *
      * @param string $id    The unique identifier for the item
      * @param mixed  $value The value to define an item
-     * @throws RuntimeException Prevent override of a frozen item
+     * @throws \RuntimeException Prevent override of a frozen item
      */
     public function set(string $id, $value)
     {
@@ -163,7 +154,7 @@ class Container implements ContainerInterface, ArrayAccess
      *
      * @return mixed The calculated value of the item
      *
-     * @throws RuntimeException If the identifier is not defined
+     * @throws \RuntimeException If the identifier is not defined
      */
     public function offsetGet($id)
     {
@@ -177,7 +168,7 @@ class Container implements ContainerInterface, ArrayAccess
      *
      * @return mixed The calculated value of the item
      *
-     * @throws RuntimeException If the identifier is not defined
+     * @throws \RuntimeException If the identifier is not defined
      */
     public function get($id)
     {
@@ -322,7 +313,7 @@ class Container implements ContainerInterface, ArrayAccess
      *
      * @return string
      *
-     * @throws RuntimeException
+     * @throws \RuntimeException
      */
     public function getActual(string $alias)
     {
@@ -331,7 +322,7 @@ class Container implements ContainerInterface, ArrayAccess
         }
 
         if ($this->aliasMaps[$alias] === $alias) {
-            throw new RuntimeException(i18n('%s is aliased to itself.', $alias));
+            throw new \RuntimeException(i18n('%s is aliased to itself.', $alias));
         }
         // 允许多层
         return $this->getActual($this->aliasMaps[$alias]);
@@ -348,16 +339,16 @@ class Container implements ContainerInterface, ArrayAccess
     protected function build($concrete, array $parameters = [])
     {
         if (!class_exists($concrete)) {
-            throw new RuntimeException(i18n('Class %s not exists.', $concrete));
+            throw new \RuntimeException(i18n('Class %s not exists.', $concrete));
         }
 
-        $reflector = new ReflectionClass($concrete);
+        $reflector = new \ReflectionClass($concrete);
 
         // If the type is not instantiable, the developer is attempting to resolve
         // an abstract type such as an Interface of Abstract Class and there is
         // no binding registered for the abstractions so we need to bail out.
         if (!$reflector->isInstantiable()) {
-            throw new RuntimeException(i18n('Target %s is not instantiable.', $concrete));
+            throw new \RuntimeException(i18n('Target %s is not instantiable.', $concrete));
         }
 
         $constructor = $reflector->getConstructor();
@@ -400,8 +391,8 @@ class Container implements ContainerInterface, ArrayAccess
     {
         try {
             return $this->resolve($id, $parameters);
-        } catch (Exception $e) {
-            throw new RuntimeException($e->getMessage());
+        } catch (\Exception $e) {
+            throw new \RuntimeException($e->getMessage());
         }
     }
 
@@ -419,7 +410,7 @@ class Container implements ContainerInterface, ArrayAccess
 
         // 支持直接使用类名，不需要预先注入
         if (!class_exists($id) && !$this->has($id)) {
-            throw new Exception(i18n('Item "%s" not exists.', $id));
+            throw new \Exception(i18n('Item "%s" not exists.', $id));
         }
 
         // 是否根据特定的上下文创建实例
@@ -432,7 +423,7 @@ class Container implements ContainerInterface, ArrayAccess
 
         // 原值、已经计算过的
         if (isset($this->raw[$id])
-            || (!$needsContextualBuild && is_object($this->items[$id]) && !$this->items[$id] instanceof Closure
+            || (!$needsContextualBuild && is_object($this->items[$id]) && !$this->items[$id] instanceof \Closure
             && !isset($this->factories[$id]))) {
             return $this->items[$id];
         }
@@ -445,7 +436,7 @@ class Container implements ContainerInterface, ArrayAccess
         // If the concrete type is actually a Closure, we will just execute it and
         // hand back the results of the functions, which allows functions to be
         // used as resolvers for more fine-tuned resolution of these objects.
-        if ($concrete instanceof Closure) {
+        if ($concrete instanceof \Closure) {
             // $concrete的第一个参数是container，其他的参数是依次位置
             $args = array_merge([$this], $parameters);
             $object = call_user_func_array($concrete, static::getMethodDependencies($this, $concrete, $args));
@@ -472,7 +463,7 @@ class Container implements ContainerInterface, ArrayAccess
     }
 
     /**
-     * Call the given Closure / class@method and inject its dependencies.
+     * Call the given \Closure / class@method and inject its dependencies.
      *
      * @param callable|string $callback
      * @param array           $parameters
@@ -483,7 +474,7 @@ class Container implements ContainerInterface, ArrayAccess
     public function call($callback, array $parameters = [], $defaultMethod = null)
     {
         if (!is_callable($callback) && !is_string($callback)) {
-            throw new InvalidArgumentException(i18n('"callback" needs callable.'));
+            throw new \InvalidArgumentException(i18n('"callback" needs callable.'));
         }
 
         if (!is_callable($callback) && is_string($callback)) {
@@ -596,16 +587,16 @@ class Container implements ContainerInterface, ArrayAccess
     /**
      * Resolve a non-class hinted primitive dependency.
      *
-     * @param ReflectionParameter $parameter
+     * @param \ReflectionParameter $parameter
      *
      * @return mixed
      *
-     * @throws RuntimeException
+     * @throws \RuntimeException
      */
-    protected function resolvePrimitive(ReflectionParameter $parameter)
+    protected function resolvePrimitive(\ReflectionParameter $parameter)
     {
         if (!is_null($concrete = $this->getContextualConcrete('$' . $parameter->name))) {
-            return $concrete instanceof Closure ? $concrete($this) : $concrete;
+            return $concrete instanceof \Closure ? $concrete($this) : $concrete;
         }
 
         if ($parameter->isDefaultValueAvailable()) {
@@ -614,23 +605,23 @@ class Container implements ContainerInterface, ArrayAccess
 
         $message = "Unresolvable dependency resolving [%s] in class %s";
 
-        throw new RuntimeException(i18n($message, $parameter->name, $parameter->getDeclaringClass()->getName()));
+        throw new \RuntimeException(i18n($message, $parameter->name, $parameter->getDeclaringClass()->getName()));
     }
 
     /**
      * Resolve a class based dependency from the container.
      *
-     * @param ReflectionParameter $parameter
+     * @param \ReflectionParameter $parameter
      *
      * @return mixed
      *
-     * @throws RuntimeException
+     * @throws \RuntimeException
      */
-    protected function resolveClass(ReflectionParameter $parameter)
+    protected function resolveClass(\ReflectionParameter $parameter)
     {
         try {
             return $this->resolve($parameter->getClass()->name);
-        } catch (Exception $e) {
+        } catch (\Exception $e) {
             // If we can not resolve the class instance, we will check to see if the value
             // is optional, and if it is we will return the optional parameter value as
             // the value of the dependency, similarly to how we do this with scalars. 
@@ -647,7 +638,7 @@ class Container implements ContainerInterface, ArrayAccess
      *
      * @param string          $concrete
      * @param string          $needs
-     * @param Closure|string $implementation
+     * @param \Closure|string $implementation
      */
     public function when($concrete, $needs, $implementation)
     {
@@ -669,16 +660,16 @@ class Container implements ContainerInterface, ArrayAccess
     /**
      * Call a string reference to a class using Class@method syntax.
      *
-     * @param ContainerInterface $container
+     * @param PsrContainerInterface $container
      * @param string                            $callback
      * @param array                             $parameters
      * @param string|null                       $defaultMethod
      *
      * @return mixed
      *
-     * @throws InvalidArgumentException
+     * @throws \InvalidArgumentException
      */
-    protected static function callClass($container, $callback, array $parameters = [], $defaultMethod = null)
+    protected static function callClass(PsrContainerInterface $container, $callback, array $parameters = [], $defaultMethod = null)
     {
         $segments = explode('::', $callback);
 
@@ -690,7 +681,7 @@ class Container implements ContainerInterface, ArrayAccess
         $callable = [$container->make($segments[0]), $method];
 
         if (!is_callable($callable)) {
-            throw new InvalidArgumentException(i18n('Method %s invalid.', $callback));
+            throw new \InvalidArgumentException(i18n('Method %s invalid.', $callback));
         }
 
         return call_user_func_array(
@@ -702,14 +693,17 @@ class Container implements ContainerInterface, ArrayAccess
     /**
      * Get all dependencies for a given method.
      *
-     * @param ContainerInterface $container
+     * @param PsrContainerInterface $container
      * @param callable|string                   $callback
      * @param array                             $parameters
      *
      * @return array
      */
-    public static function getMethodDependencies($container, $callback, array $parameters = [])
-    {
+    public static function getMethodDependencies(
+        PsrContainerInterface $container, 
+        $callback, 
+        array $parameters = []
+    ) {
         $dependencies = [];
 
         foreach (static::getCallReflector($callback)->getParameters() as $key => $parameter) {
@@ -724,7 +718,7 @@ class Container implements ContainerInterface, ArrayAccess
      *
      * @param callable|string $callback
      *
-     * @return ReflectionFunctionAbstract
+     * @return \ReflectionFunctionAbstract
      */
     protected static function getCallReflector($callback)
     {
@@ -733,23 +727,23 @@ class Container implements ContainerInterface, ArrayAccess
         }
 
         return is_array($callback)
-            ? new ReflectionMethod($callback[0], $callback[1])
-            : new ReflectionFunction($callback);
+            ? new \ReflectionMethod($callback[0], $callback[1])
+            : new \ReflectionFunction($callback);
     }
 
     /**
      * Get the dependency for the given call parameter.
      *
-     * @param ContainerInterface $container
+     * @param PsrContainerInterface $container
      * @param int                           $i            参数位置
-     * @param ReflectionParameter          $parameter
+     * @param \ReflectionParameter          $parameter
      * @param array                         $parameters
      * @param array                         $dependencies
      *
      * @return mixed
      */
     protected static function addDependencyForCallParameter(
-        $container,
+        PsrContainerInterface $container,
         $position,
         $parameter,
         array &$parameters,
