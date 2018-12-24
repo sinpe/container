@@ -1,9 +1,6 @@
-DI Container
-=======================================
+# DI Container
 
-
-Install
--------
+## Installation
 
 composer:
 
@@ -11,14 +8,13 @@ composer:
 composer require long/container
 ```
 
-Requires PHP 7.0 or newer.
+PHP 7.1 or newer.
 
-用例
------
-
-### 容器的使用
+## Examples
 
 
 ```php
 
 ```
+
+

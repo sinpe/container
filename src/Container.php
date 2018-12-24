@@ -11,7 +11,6 @@
 namespace Sinpe\Container;
 
 use Psr\Container\ContainerInterface as PsrContainerInterface;
-use Sinpe\Container\Facades\Container as ContainerFacade;
 
 /**
  * DI Container.
@@ -108,15 +107,11 @@ class Container implements ContainerInterface, PsrContainerInterface, \ArrayAcce
      */
     private function __construct()
     {
-        class_alias(ContainerFacade::class, 'Container');
-
         if (!$this->has(PsrContainerInterface::class)) {
             $this->set(PsrContainerInterface::class, $this);
         }
 
         $this->registerDefaults();
-
-        Facade::setContainer($this);
     }
 
     /**
