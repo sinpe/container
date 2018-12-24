@@ -88,6 +88,10 @@ class Container implements ContainerInterface, PsrContainerInterface, \ArrayAcce
      */
     public function __construct()
     {
+		Facade::setContainer($this);
+
+		class_alias(ContainerFacade::class, 'Container');
+
         if (!$this->has(PsrContainerInterface::class)) {
             $this->set(PsrContainerInterface::class, $this);
         }
