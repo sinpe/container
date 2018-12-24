@@ -21,11 +21,6 @@ use Psr\Container\ContainerInterface as PsrContainerInterface;
 class Container implements ContainerInterface, PsrContainerInterface, \ArrayAccess
 {
     /**
-     * @var static
-     */
-    static private $singleton;
-
-    /**
      * Context
      *
      * @var array
@@ -89,23 +84,9 @@ class Container implements ContainerInterface, PsrContainerInterface, \ArrayAcce
     private $raw = [];
 
     /**
-     * Singleton.
-     *
-     * @return static
-     */
-    static public function getInstance()
-    {
-        if (!self::$singleton) {
-            self::$singleton = new static();
-        }
-
-        return self::$singleton;
-    }
-
-    /**
      * __construct.
      */
-    private function __construct()
+    public function __construct()
     {
         if (!$this->has(PsrContainerInterface::class)) {
             $this->set(PsrContainerInterface::class, $this);
