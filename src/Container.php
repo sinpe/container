@@ -347,6 +347,12 @@ class Container implements ContainerInterface, PsrContainerInterface, \ArrayAcce
 
             $object = $reflector->newInstanceArgs($instances);
         }
+
+        // 
+        if (method_exists($object, 'setContainer')) {
+            $object->setContainer($this);
+        }
+
         // 有初始化方法时，调用初始化
         if (method_exists($object, '__init')) {
             $object->__init();
