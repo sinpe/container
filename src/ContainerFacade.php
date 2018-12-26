@@ -8,7 +8,7 @@
  * file that was distributed with this source code.
  */
 
-namespace Sinpe\Container\Facades;
+namespace Sinpe\Container;
 
 use Psr\Container\ContainerInterface as PsrContainerInterface;
 
