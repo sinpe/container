@@ -353,7 +353,7 @@ class Container implements ContainerInterface, PsrContainerInterface, \ArrayAcce
         }
 
         // 
-        if (method_exists($object, 'setContainer')) {
+        if ($object instanceof ContainerAwareInterface) {
             $object->setContainer($this);
         }
 

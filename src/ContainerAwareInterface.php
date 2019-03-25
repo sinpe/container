@@ -12,22 +12,14 @@ namespace Sinpe\Container;
 
 use Psr\Container\ContainerInterface;
 
-trait ContainerAwareTrait
+interface ContainerAwareInterface
 {
-    /**
-     * @var ContainerInterface
-     */
-    private $container;
-
     /**
      * Get container
      *
      * @return ContainerInterface
      */
-    public function getContainer(): ContainerInterface
-    {
-        return $this->container;
-    }
+    public function getContainer(): ContainerInterface;
 
     /**
      * Set container
@@ -36,8 +28,5 @@ trait ContainerAwareTrait
      * 
      * @return void
      */
-    public function setContainer(ContainerInterface $container)
-    {
-        $this->container = $container;
-    }
+    public function setContainer(ContainerInterface $container);
 }

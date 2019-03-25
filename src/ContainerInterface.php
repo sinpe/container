@@ -11,7 +11,7 @@
 namespace Sinpe\Container;
 
 /**
- * DI Container interface
+ * Container interface
  * 
  * @package Sinpe\Container
  * @since   1.0.0
