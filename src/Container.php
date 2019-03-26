@@ -1,5 +1,5 @@
 <?php
-/*
+ /*
  * This file is part of the long/container package.
  *
  * (c) Sinpe <support@sinpe.com>
@@ -10,7 +10,9 @@
 
 namespace Sinpe\Container;
 
-use Psr\Container\ContainerInterface as PsrContainerInterface;
+use Sinpe\Event\EventManager;
+
+use Psr\Container\ContainerInterface;
 
 /**
  * DI Container.
@@ -18,7 +20,7 @@ use Psr\Container\ContainerInterface as PsrContainerInterface;
  * @package Sinpe\Container
  * @since   1.0.0
  */
-class Container implements ContainerInterface, PsrContainerInterface, \ArrayAccess
+class Container implements ContainerInterface, \ArrayAccess
 {
     /**
      * Context
@@ -88,9 +90,9 @@ class Container implements ContainerInterface, PsrContainerInterface, \ArrayAcce
      */
     public function __construct()
     {
-		Facade::setContainer($this);
+        Facade::setContainer($this);
 
-		class_alias(ContainerFacade::class, 'Container');
+        class_alias(ContainerFacade::class, 'Container');
 
         if (!$this->has(PsrContainerInterface::class)) {
             $this->set(PsrContainerInterface::class, $this);
@@ -188,10 +190,10 @@ class Container implements ContainerInterface, PsrContainerInterface, \ArrayAcce
     {
         if ($this->has($id)) {
             unset($this->items[$id],
-                $this->frozen[$id],
-                $this->raw[$id],
-                $this->factories[$id],
-                $this->aliasMaps[$id]);
+            $this->frozen[$id],
+            $this->raw[$id],
+            $this->factories[$id],
+            $this->aliasMaps[$id]);
         }
     }
 
@@ -259,8 +261,7 @@ class Container implements ContainerInterface, PsrContainerInterface, \ArrayAcce
      * Register the default items.
      */
     protected function registerDefaults()
-    {
-    }
+    { }
 
     /**
      * __get.
@@ -357,10 +358,8 @@ class Container implements ContainerInterface, PsrContainerInterface, \ArrayAcce
             $object->setContainer($this);
         }
 
-        // 有初始化方法时，调用初始化
-        if (method_exists($object, '__init')) {
-            $object->__init();
-        }
+        // 触发初始化事件
+        $this->make(EventManager::class)->fire(get_class($object) . '.inited');
 
         return $object;
     }
@@ -408,9 +407,11 @@ class Container implements ContainerInterface, PsrContainerInterface, \ArrayAcce
         }
 
         // 原值、已经计算过的
-        if (isset($this->raw[$id])
+        if (
+            isset($this->raw[$id])
             || (!$needsContextualBuild && is_object($this->items[$id]) && !$this->items[$id] instanceof \Closure
-            && !isset($this->factories[$id]))) {
+                && !isset($this->factories[$id]))
+        ) {
             return $this->items[$id];
         }
         // return by factory
@@ -614,7 +615,7 @@ class Container implements ContainerInterface, PsrContainerInterface, \ArrayAcce
             if ($parameter->isOptional()) {
                 return $parameter->getDefaultValue();
             }
-            
+
             throw $e;
         }
     }
@@ -686,8 +687,8 @@ class Container implements ContainerInterface, PsrContainerInterface, \ArrayAcce
      * @return array
      */
     public static function getMethodDependencies(
-        PsrContainerInterface $container, 
-        $callback, 
+        PsrContainerInterface $container,
+        $callback,
         array $parameters = []
     ) {
         $dependencies = [];
