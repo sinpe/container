@@ -10,9 +10,8 @@
 
 namespace Sinpe\Container;
 
-use Sinpe\Event\EventManager;
-
 use Psr\Container\ContainerInterface;
+use Psr\EventDispatcher\EventDispatcherInterface;
 
 /**
  * DI Container.
@@ -86,19 +85,31 @@ class Container implements ContainerInterface, \ArrayAccess
     private $raw = [];
 
     /**
+     * @var EventDispatcherInterface
+     */
+    private $eventDispatcher;
+
+    /**
      * __construct.
      */
     public function __construct()
     {
-        Facade::setContainer($this);
-
-        class_alias(ContainerFacade::class, 'Container');
-
-        if (!$this->has(PsrContainerInterface::class)) {
-            $this->set(PsrContainerInterface::class, $this);
+        if (!$this->has(ContainerInterface::class)) {
+            $this->set(ContainerInterface::class, $this);
         }
 
         $this->registerDefaults();
+    }
+
+    /**
+     * Set event dispatcher
+     *
+     * @param EventDispatcherInterface $eventDispatcher
+     * @return void
+     */
+    public function setEventDispatcher(EventDispatcherInterface $eventDispatcher)
+    {
+        $this->eventDispatcher = $eventDispatcher;
     }
 
     /**
@@ -241,12 +252,11 @@ class Container implements ContainerInterface, \ArrayAccess
     /**
      * Registers a service provider.
      *
-     * @param ProviderInterface $provider A ProviderInterface instance
      * @param array                    $items   An array of items that customizes the provider
      *
      * @return static
      */
-    public function register(ProviderInterface $provider, array $items = array())
+    public function register($provider, array $items = array())
     {
         $provider->register($this);
 
@@ -352,15 +362,16 @@ class Container implements ContainerInterface, \ArrayAccess
 
             $object = $reflector->newInstanceArgs($instances);
         }
-
         // 
         if ($object instanceof ContainerAwareInterface) {
             $object->setContainer($this);
         }
 
-        // 触发初始化事件
-        $this->make(EventManager::class)->fire(get_class($object) . '.inited');
-
+        // 初始化事件
+        if ($this->eventDispatcher) {
+            $this->eventDispatcher->dispatch($object);
+        }
+        
         return $object;
     }
 
@@ -647,7 +658,7 @@ class Container implements ContainerInterface, \ArrayAccess
     /**
      * Call a string reference to a class using Class@method syntax.
      *
-     * @param PsrContainerInterface $container
+     * @param ContainerInterface $container
      * @param string                            $callback
      * @param array                             $parameters
      * @param string|null                       $defaultMethod
@@ -656,7 +667,7 @@ class Container implements ContainerInterface, \ArrayAccess
      *
      * @throws \InvalidArgumentException
      */
-    protected static function callClass(PsrContainerInterface $container, $callback, array $parameters = [], $defaultMethod = null)
+    protected static function callClass(ContainerInterface $container, $callback, array $parameters = [], $defaultMethod = null)
     {
         $segments = explode('::', $callback);
 
@@ -680,14 +691,14 @@ class Container implements ContainerInterface, \ArrayAccess
     /**
      * Get all dependencies for a given method.
      *
-     * @param PsrContainerInterface $container
+     * @param ContainerInterface $container
      * @param callable|string                   $callback
      * @param array                             $parameters
      *
      * @return array
      */
     public static function getMethodDependencies(
-        PsrContainerInterface $container,
+        ContainerInterface $container,
         $callback,
         array $parameters = []
     ) {
@@ -721,7 +732,7 @@ class Container implements ContainerInterface, \ArrayAccess
     /**
      * Get the dependency for the given call parameter.
      *
-     * @param PsrContainerInterface $container
+     * @param ContainerInterface $container
      * @param int                           $i            参数位置
      * @param \ReflectionParameter          $parameter
      * @param array                         $parameters
@@ -730,7 +741,7 @@ class Container implements ContainerInterface, \ArrayAccess
      * @return mixed
      */
     protected static function addDependencyForCallParameter(
-        PsrContainerInterface $container,
+        ContainerInterface $container,
         $position,
         $parameter,
         array &$parameters,
