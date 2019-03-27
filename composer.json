@@ -1,7 +1,7 @@
 {
     "name": "long/container",
     "description": "DI Container",
-    "keywords": ["container", "facade"],
+    "keywords": ["container"],
     "homepage": "https://github.com/sinpe/php-container",
     "type": "library",
     "license": "MIT",
