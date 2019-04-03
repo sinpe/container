@@ -1,5 +1,5 @@
 <?php
- /*
+/*
  * This file is part of the long/container package.
  *
  * (c) Sinpe <support@sinpe.com>
@@ -122,7 +122,7 @@ class Container implements ContainerInterface, \ArrayAccess
     public function offsetSet($id, $value)
     {
         if (isset($this->frozen[$id])) {
-            throw new \RuntimeException(i18n('Cannot override frozen item "%s".', $id));
+            throw new Exception(sprintf('Cannot override frozen item "%s".', $id));
         }
 
         $this->items[$id] = $value;
@@ -313,7 +313,7 @@ class Container implements ContainerInterface, \ArrayAccess
         }
 
         if ($this->aliasMaps[$alias] === $alias) {
-            throw new \RuntimeException(i18n('%s is aliased to itself.', $alias));
+            throw new Exception(sprintf('%s is aliased to itself.', $alias));
         }
         // 允许多层
         return $this->getActual($this->aliasMaps[$alias]);
@@ -330,7 +330,7 @@ class Container implements ContainerInterface, \ArrayAccess
     protected function build($concrete, array $parameters = [])
     {
         if (!class_exists($concrete)) {
-            throw new \RuntimeException(i18n('Class %s not exists.', $concrete));
+            throw new Exception(sprintf('%s not exists.', $concrete));
         }
 
         $reflector = new \ReflectionClass($concrete);
@@ -339,7 +339,7 @@ class Container implements ContainerInterface, \ArrayAccess
         // an abstract type such as an Interface of Abstract Class and there is
         // no binding registered for the abstractions so we need to bail out.
         if (!$reflector->isInstantiable()) {
-            throw new \RuntimeException(i18n('Target %s is not instantiable.', $concrete));
+            throw new Exception(sprintf('%s is not instantiable.', $concrete));
         }
 
         $constructor = $reflector->getConstructor();
@@ -385,11 +385,7 @@ class Container implements ContainerInterface, \ArrayAccess
      */
     public function make(string $id, array $parameters = [])
     {
-        try {
-            return $this->resolve($id, $parameters);
-        } catch (\Exception $e) {
-            throw new \RuntimeException($e->getMessage());
-        }
+        return $this->resolve($id, $parameters);
     }
 
     /**
@@ -406,7 +402,7 @@ class Container implements ContainerInterface, \ArrayAccess
 
         // 支持直接使用类名，不需要预先注入
         if (!class_exists($id) && !$this->has($id)) {
-            throw new \Exception(i18n('Item "%s" not exists.', $id));
+            throw new Exception\NotFoundException(sprintf('%s not found.', $id));
         }
 
         // 是否根据特定的上下文创建实例
@@ -472,7 +468,7 @@ class Container implements ContainerInterface, \ArrayAccess
     public function call($callback, array $parameters = [], $defaultMethod = null)
     {
         if (!is_callable($callback) && !is_string($callback)) {
-            throw new \InvalidArgumentException(i18n('"callback" needs callable.'));
+            throw new \InvalidArgumentException(sprintf('"callback" needs callable.'));
         }
 
         if (!is_callable($callback) && is_string($callback)) {
@@ -603,7 +599,7 @@ class Container implements ContainerInterface, \ArrayAccess
 
         $message = "Unresolvable dependency resolving [%s] in class %s";
 
-        throw new \RuntimeException(i18n($message, $parameter->name, $parameter->getDeclaringClass()->getName()));
+        throw new Exception(sprintf($message, $parameter->name, $parameter->getDeclaringClass()->getName()));
     }
 
     /**
@@ -679,7 +675,7 @@ class Container implements ContainerInterface, \ArrayAccess
         $callable = [$container->make($segments[0]), $method];
 
         if (!is_callable($callable)) {
-            throw new \InvalidArgumentException(i18n('Method %s invalid.', $callback));
+            throw new \InvalidArgumentException(sprintf('Method %s invalid.', $callback));
         }
 
         return call_user_func_array(
