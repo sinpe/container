@@ -13,6 +13,30 @@ namespace Sinpe\Container;
 use Psr\Container\ContainerInterface;
 use Psr\EventDispatcher\EventDispatcherInterface;
 
+
+if (!function_exists('snake')) {
+    /**
+     * Convert a string to snake case.
+     *
+     * @param  string  $value
+     * @param  string  $delimiter
+     * @return string
+     */
+    function snake($value, $delimiter = '_')
+    {
+        $value = trim(preg_replace_callback(
+            '#[A-Z]#',
+            function ($matches) use ($delimiter) {
+                return $delimiter . strtolower($matches[0]);
+            },
+            $value
+        ), $delimiter);
+
+        return $value;
+    }
+
+}
+
 if (!function_exists('camel')) {
     /**
      * Convert a value to camel case.
@@ -525,9 +549,9 @@ class Container implements ContainerInterface, \ArrayAccess
         foreach ($parameters as $key => $parameter) {
             if (is_string($key)) {
                 $camelName = camel($key);
-                $studlyName = studly($key);
+                $snakeName = snake($key);
                 $parameters[$camelName] = $parameter;
-                $parameters[$studlyName] = $parameter;
+                $parameters[$snakeName] = $parameter;
             }
         }
 
