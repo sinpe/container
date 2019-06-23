@@ -13,6 +13,34 @@ namespace Sinpe\Container;
 use Psr\Container\ContainerInterface;
 use Psr\EventDispatcher\EventDispatcherInterface;
 
+if (!function_exists('camel')) {
+    /**
+     * Convert a value to camel case.
+     *
+     * @param  string  $value
+     * @return string
+     */
+    function camel($value)
+    {
+        return lcfirst(studly($value));
+    }
+}
+
+if (!function_exists('studly')) {
+    /**
+     * Convert a value to studly caps case.
+     *
+     * @param  string  $value
+     * @return string
+     */
+    function studly(string $value)
+    {
+        $value = ucwords(str_replace(['-', '_'], ' ', $value));
+
+        return str_replace(' ', '', $value);
+    }
+}
+
 /**
  * DI Container.
  * 
@@ -371,7 +399,7 @@ class Container implements ContainerInterface, \ArrayAccess
         if ($this->eventDispatcher) {
             $this->eventDispatcher->dispatch($object);
         }
-        
+
         return $object;
     }
 
@@ -433,6 +461,9 @@ class Container implements ContainerInterface, \ArrayAccess
         if ($concrete instanceof \Closure) {
             // $concrete的第一个参数是container，其他的参数是依次位置
             $args = array_merge([$this], $parameters);
+
+            $args = $this->supportParameterNameStyle($args);
+
             $object = call_user_func_array($concrete, static::getMethodDependencies($this, $concrete, $args));
         } else {
             // We're ready to instantiate an instance of the concrete type registered for
@@ -475,10 +506,32 @@ class Container implements ContainerInterface, \ArrayAccess
             return static::callClass($this, $callback, $parameters, $defaultMethod);
         }
 
+        $parameters = $this->supportParameterNameStyle($parameters);
+
         return call_user_func_array(
             $callback,
             static::getMethodDependencies($this, $callback, $parameters)
         );
+    }
+
+    /**
+     * 参数命名风格支持
+     *
+     * @param $parameters
+     */
+    public function supportParameterNameStyle($parameters)
+    {
+        //
+        foreach ($parameters as $key => $parameter) {
+            if (is_string($key)) {
+                $camelName = camel($key);
+                $studlyName = studly($key);
+                $parameters[$camelName] = $parameter;
+                $parameters[$studlyName] = $parameter;
+            }
+        }
+
+        return $parameters;
     }
 
     /**
@@ -677,6 +730,8 @@ class Container implements ContainerInterface, \ArrayAccess
         if (!is_callable($callable)) {
             throw new \InvalidArgumentException(sprintf('Method %s invalid.', $callback));
         }
+
+        $parameters = $this->supportParameterNameStyle($parameters);
 
         return call_user_func_array(
             $callable,
