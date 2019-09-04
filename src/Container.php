@@ -13,7 +13,6 @@ namespace Sinpe\Container;
 use Psr\Container\ContainerInterface;
 use Psr\EventDispatcher\EventDispatcherInterface;
 
-
 if (!function_exists('snake')) {
     /**
      * Convert a string to snake case.
@@ -34,7 +33,6 @@ if (!function_exists('snake')) {
 
         return $value;
     }
-
 }
 
 if (!function_exists('camel')) {
@@ -137,11 +135,6 @@ class Container implements ContainerInterface, \ArrayAccess
     private $raw = [];
 
     /**
-     * @var EventDispatcherInterface
-     */
-    private $eventDispatcher;
-
-    /**
      * __construct.
      */
     public function __construct()
@@ -151,17 +144,6 @@ class Container implements ContainerInterface, \ArrayAccess
         }
 
         $this->registerDefaults();
-    }
-
-    /**
-     * Set event dispatcher
-     *
-     * @param EventDispatcherInterface $eventDispatcher
-     * @return void
-     */
-    public function setEventDispatcher(EventDispatcherInterface $eventDispatcher)
-    {
-        $this->eventDispatcher = $eventDispatcher;
     }
 
     /**
@@ -402,8 +384,8 @@ class Container implements ContainerInterface, \ArrayAccess
         }
 
         // 初始化事件
-        if ($this->eventDispatcher) {
-            $this->eventDispatcher->dispatch($object);
+        if ($this->has(EventDispatcherInterface::class)) {
+            $this->get(EventDispatcherInterface::class)->dispatch($object);
         }
 
         return $object;
