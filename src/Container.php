@@ -322,7 +322,7 @@ class Container implements ContainerInterface, \ArrayAccess
      *
      * @throws \RuntimeException
      */
-    public function getActual(string $alias)
+    public function getImplemention(string $alias)
     {
         if (!isset($this->aliasMaps[$alias])) {
             return $alias;
@@ -332,7 +332,7 @@ class Container implements ContainerInterface, \ArrayAccess
             throw new Exception(sprintf('%s is aliased to itself.', $alias));
         }
         // 允许多层
-        return $this->getActual($this->aliasMaps[$alias]);
+        return $this->getImplemention($this->aliasMaps[$alias]);
     }
 
     /**
@@ -414,7 +414,7 @@ class Container implements ContainerInterface, \ArrayAccess
      */
     protected function resolve(string $id, $parameters = [])
     {
-        $id = $this->getActual($id);
+        $id = $this->getImplemention($id);
 
         // 支持直接使用类名，不需要预先注入
         if (!class_exists($id) && !$this->has($id)) {
@@ -447,11 +447,7 @@ class Container implements ContainerInterface, \ArrayAccess
         // hand back the results of the functions, which allows functions to be
         // used as resolvers for more fine-tuned resolution of these objects.
         if ($concrete instanceof \Closure) {
-            // $concrete的第一个参数是container，其他的参数是依次位置
-            $args = array_merge([$this], $parameters);
-
-            $args = $this->supportParameterNameStyle($args);
-
+            $args = $this->supportParameterNameStyle($parameters);
             $object = call_user_func_array($concrete, static::getMethodDependencies($this, $concrete, $args));
         } else {
             // We're ready to instantiate an instance of the concrete type registered for
@@ -677,7 +673,7 @@ class Container implements ContainerInterface, \ArrayAccess
      */
     public function when($concrete, $needs, $implementation)
     {
-        $this->contextual[$concrete][$this->getActual($needs)] = $implementation;
+        $this->contextual[$concrete][$this->getImplemention($needs)] = $implementation;
     }
 
     /**
