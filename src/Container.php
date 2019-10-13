@@ -378,10 +378,6 @@ class Container implements ContainerInterface, \ArrayAccess
 
             $object = $reflector->newInstanceArgs($instances);
         }
-        // 
-        if ($object instanceof ContainerAwareInterface) {
-            $object->setContainer($this);
-        }
 
         // 初始化事件
         if ($this->has(EventDispatcherInterface::class)) {
@@ -447,7 +443,7 @@ class Container implements ContainerInterface, \ArrayAccess
         // hand back the results of the functions, which allows functions to be
         // used as resolvers for more fine-tuned resolution of these objects.
         if ($concrete instanceof \Closure) {
-            $args = $this->supportParameterNameStyle($parameters);
+            $args = static::parseParameterName($parameters);
             $object = call_user_func_array($concrete, static::getMethodDependencies($this, $concrete, $args));
         } else {
             // We're ready to instantiate an instance of the concrete type registered for
@@ -490,7 +486,7 @@ class Container implements ContainerInterface, \ArrayAccess
             return static::callClass($this, $callback, $parameters, $defaultMethod);
         }
 
-        $parameters = $this->supportParameterNameStyle($parameters);
+        $parameters = static::parseParameterName($parameters);
 
         return call_user_func_array(
             $callback,
@@ -503,7 +499,7 @@ class Container implements ContainerInterface, \ArrayAccess
      *
      * @param $parameters
      */
-    public function supportParameterNameStyle($parameters)
+    public static function parseParameterName($parameters)
     {
         //
         foreach ($parameters as $key => $parameter) {
@@ -715,7 +711,7 @@ class Container implements ContainerInterface, \ArrayAccess
             throw new \InvalidArgumentException(sprintf('Method %s invalid.', $callback));
         }
 
-        $parameters = $this->supportParameterNameStyle($parameters);
+        $parameters = static::parseParameterName($parameters);
 
         return call_user_func_array(
             $callable,
